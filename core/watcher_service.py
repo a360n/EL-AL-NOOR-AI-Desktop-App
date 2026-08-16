@@ -179,12 +179,13 @@ class EcoLabWatcherService:
             )
             aiinfo_json_path = self.ai_engine.save_aiinfo_json(ai_result, panel_out_dir)
 
-            # Step 4: Render Overlays (Inverse Reassembly of 144 cells with red X markers on defects)
+            # Step 4: Render Overlays (Clean seamless panel with red X markers on defects)
             ai_conf_map = {
                 d["cell"]: d["confidence"] for d in ai_result["defects_detail"]
             }
             human_overlay_path, ai_overlay_path = PanelOverlayEngine.save_annotated_panels(
-                cells_dict=cropper_result["cells"],
+                model_panel_bgr=cropper_result["model_image_bgr"],
+                grid_overlay=cropper_result["grid_overlay"],
                 human_defects=el_metadata["defective_cells"],
                 ai_defects=ai_result["defective_cells"],
                 ai_confidence_map=ai_conf_map,

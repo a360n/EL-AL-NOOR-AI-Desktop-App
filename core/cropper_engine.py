@@ -9,7 +9,8 @@ Exact identical algorithm used in el_cropper_app and dataset generation:
   3. Square patch side length: SL = 1.3 * CH (15% safety margin on each side).
   4. Clean background safety margin padding (BORDER_CONSTANT with detected panel border color).
   5. Slices 144 square cell patches (A1 to F24).
-  6. Resizes all patches to 224x224 px PNG.
+  6. Resizes all patches to 224x224 px PNG for AI inference.
+  7. Maps exact non-overlapping cell grid coordinates on the model panel for seamless overlay.
 """
 
 import os
@@ -98,9 +99,9 @@ class SolarPanelCropperEngine:
         Returns:
           - metadata: dict of calculated dimensions and padding
           - padded_image_bgr: clean padded image used for slicing
-          - model_image_bgr: aspect-ratio corrected image
+          - model_image_bgr: clean aspect-ratio corrected panel image (no padding)
           - cells: dict of 144 cells with key 'A1'..'F24' containing png bytes, bboxes, bgr patch
-          - grid_overlay: coordinate information for each cell
+          - grid_overlay: exact non-overlapping cell rectangles on model_image_bgr
         """
         orig_h, orig_w = image_bgr.shape[:2]
 
@@ -128,7 +129,7 @@ class SolarPanelCropperEngine:
 
         mh, mw = model_img.shape[:2]
 
-        # Step 3: Base cell calculations
+        # Step 3: Base cell calculations on clean model image
         ch = mw / 6.0  # Horizontal cell length along X axis (6 cols A-F)
         cw = mh / 24.0  # Vertical cell length along Y axis (24 rows 1-24)
 
@@ -158,7 +159,7 @@ class SolarPanelCropperEngine:
 
         nmh, nmw = padded_img.shape[:2]
 
-        # Step 6 & 7: Grid slicing and resizing
+        # Step 6 & 7: Grid slicing and resizing for AI
         cols = ["A", "B", "C", "D", "E", "F"]
         cells_dict = {}
         grid_overlay_info = []
@@ -169,6 +170,15 @@ class SolarPanelCropperEngine:
                 row_name = r_idx + 1
                 cell_id = f"{col_name}{row_name}"
 
+                # Non-overlapping exact cell coordinates on model_img (Seamless Display)
+                cell_x0 = int(round(c_idx * ch))
+                cell_y0 = int(round(r_idx * cw))
+                cell_x1 = int(round((c_idx + 1) * ch))
+                cell_y1 = int(round((r_idx + 1) * cw))
+                cell_w = max(1, cell_x1 - cell_x0)
+                cell_h = max(1, cell_y1 - cell_y0)
+
+                # Center on padded image for 15% overlap patch extraction
                 cx = pad_x_float + (c_idx + 0.5) * ch
                 cy = pad_y_float + (r_idx + 0.5) * cw
 
@@ -204,6 +214,12 @@ class SolarPanelCropperEngine:
                     "row": row_name,
                     "col_idx": c_idx,
                     "row_idx": r_idx,
+                    "bbox_model": {
+                        "x": cell_x0,
+                        "y": cell_y0,
+                        "w": cell_w,
+                        "h": cell_h,
+                    },
                     "bbox_padded": {
                         "x": x_start_clamped,
                         "y": y_start_clamped,
@@ -218,12 +234,12 @@ class SolarPanelCropperEngine:
                 grid_overlay_info.append(
                     {
                         "id": cell_id,
-                        "x": x_start_clamped,
-                        "y": y_start_clamped,
-                        "w": x_end_clamped - x_start_clamped,
-                        "h": y_end_clamped - y_start_clamped,
-                        "cx": cx,
-                        "cy": cy,
+                        "x": cell_x0,
+                        "y": cell_y0,
+                        "w": cell_w,
+                        "h": cell_h,
+                        "cx": (cell_x0 + cell_x1) / 2.0,
+                        "cy": (cell_y0 + cell_y1) / 2.0,
                     }
                 )
 
@@ -251,15 +267,16 @@ class SolarPanelCropperEngine:
 
     @classmethod
     def save_cells_to_folder(
-        cls, cells_dict: Dict[str, Any], output_dir: str, prefix: str = ""
+        cls,
+        cells_dict: Dict[str, Any],
+        output_dir: str,
+        prefix: str = "panel",
     ) -> List[str]:
-        """Saves all 144 cell PNG images to a target folder."""
         os.makedirs(output_dir, exist_ok=True)
         saved_paths = []
-        for cell_id, cell_data in cells_dict.items():
-            fname = f"{prefix}_{cell_id}.png" if prefix else f"{cell_id}.png"
-            fpath = os.path.join(output_dir, fname)
-            with open(fpath, "wb") as f:
-                f.write(cell_data["png_bytes"])
-            saved_paths.append(fpath)
+        for cell_id, data in cells_dict.items():
+            out_file = os.path.join(output_dir, f"{prefix}_{cell_id}.png")
+            with open(out_file, "wb") as f:
+                f.write(data["png_bytes"])
+            saved_paths.append(out_file)
         return saved_paths
