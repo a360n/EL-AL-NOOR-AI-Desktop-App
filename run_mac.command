@@ -1,27 +1,28 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # ======================================================================
-# EL AL-NOOR AI - 1-Click Desktop Launcher for macOS
+#   EL AL-NOOR AI ☀️🤖 - Solar Panels Quality Inspection Platform
+#   معمل النور للألواح الشمسية - تشغيل التطبيق المكتبي على نظام macOS
 # ======================================================================
 
-# Move to the script directory
-cd "$(dirname "$0")"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$DIR"
 
 echo "======================================================================"
-echo "   EL AL-NOOR AI ☀️🤖 - Solar Panels Quality Inspection Platform"
-echo "   Al Noor Solar Panels Factory - macOS Desktop Application"
+echo "  EL AL-NOOR AI ☀️🤖 - تشغيل المنظومة الذكية لفحص الألواح الشمسية"
+echo "  معمل النور للألواح الشمسية - macOS Application Launcher"
 echo "======================================================================"
 echo ""
 
-# Find Python 3
-if command -v python3 >/dev/null 2>&1; then
-    PYTHON_CMD="python3"
-elif command -v python >/dev/null 2>&1; then
-    PYTHON_CMD="python"
-else
-    echo "[ERROR] Python 3 is not installed or not in PATH!"
-    read -p "Press Enter to exit..."
+# Check python3
+if ! command -v python3 &> /dev/null
+then
+    echo "❌ [ERROR] Python 3 is not installed or not in PATH!"
+    echo "يرجى تثبيت بايثون 3 من الموقع الرسمي: https://www.python.org/downloads/"
+    read -p "اضغط Enter للإغلاق..."
     exit 1
 fi
 
-# Run application
-$PYTHON_CMD main.py
+echo "🚀 جاري تشغيل المنظومة وفحص التحديثات..."
+python3 "$DIR/main.py"
+
+read -p "اضغط Enter للإغلاق..."

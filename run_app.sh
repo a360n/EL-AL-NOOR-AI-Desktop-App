@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 echo "======================================================================"
 echo "   EL AL-NOOR AI - Solar Panels Quality Inspection Platform"
-echo "   Al Noor Solar Panels Factory - Desktop Inspection Launcher"
+echo "   معمل النور للألواح الشمسية - تشغيل التطبيق المكتبي"
 echo "======================================================================"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

@@ -148,19 +148,14 @@ class EcoLabWatcherService:
 
         try:
             # Prepare output directories
-            app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            local_default_dir = os.path.join(app_dir, "data", "processed_panels")
-            app_data_dir = self.db.get_setting("output_folder", "") or local_default_dir
+            app_data_dir = self.db.get_setting("output_folder", "")
+            if not app_data_dir:
+                app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                app_data_dir = os.path.join(app_dir, "data", "processed_panels")
             
-            try:
-                panel_out_dir = os.path.join(app_data_dir, panel_id)
-                cells_out_dir = os.path.join(panel_out_dir, "cells_144")
-                os.makedirs(cells_out_dir, exist_ok=True)
-            except Exception:
-                app_data_dir = local_default_dir
-                panel_out_dir = os.path.join(app_data_dir, panel_id)
-                cells_out_dir = os.path.join(panel_out_dir, "cells_144")
-                os.makedirs(cells_out_dir, exist_ok=True)
+            panel_out_dir = os.path.join(app_data_dir, panel_id)
+            cells_out_dir = os.path.join(panel_out_dir, "cells_144")
+            os.makedirs(cells_out_dir, exist_ok=True)
 
             # Step 1: Read .el file -> generate info.json
             reader = ElFileReader(el_path)
@@ -184,12 +179,12 @@ class EcoLabWatcherService:
             )
             aiinfo_json_path = self.ai_engine.save_aiinfo_json(ai_result, panel_out_dir)
 
-            # Step 4: Render Overlays on natural 1:2 panel image
+            # Step 4: Render Overlays (Inverse Reassembly of 144 cells with red X markers on defects)
             ai_conf_map = {
                 d["cell"]: d["confidence"] for d in ai_result["defects_detail"]
             }
             human_overlay_path, ai_overlay_path = PanelOverlayEngine.save_annotated_panels(
-                base_panel_bgr=cropper_result["model_image_bgr"],
+                cells_dict=cropper_result["cells"],
                 human_defects=el_metadata["defective_cells"],
                 ai_defects=ai_result["defective_cells"],
                 ai_confidence_map=ai_conf_map,

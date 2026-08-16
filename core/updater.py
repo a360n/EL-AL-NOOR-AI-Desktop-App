@@ -5,7 +5,6 @@ EL AL-NOOR AI - Auto-Updater Module (GitHub Integration)
 Checks internet connection on startup.
 If online: fetches latest update from GitHub repository (https://github.com/a360n/EL-AL-NOOR-AI-Desktop-App.git).
 If offline: directly runs the existing local version seamlessly.
-Outputs 100% clean English in terminal to ensure cross-platform compatibility without BiDi artifacts.
 """
 
 import os
@@ -54,26 +53,26 @@ def check_and_apply_update() -> Dict[str, Any]:
     Performs auto-update verification:
     1. Checks internet connectivity.
     2. If offline: returns offline status and proceeds to launch local copy.
-    3. If online: checks git repository for updates and safely applies updates via reset/pull.
+    3. If online: checks git repository for updates and pulls latest code if available.
     """
-    print("\n" + "=" * 60)
-    print("[UPDATER] Checking network connectivity and GitHub updates...")
-    print("=" * 60)
+    print("\n" + "-" * 60)
+    print("🔍 فحص الاتصال بالإنترنت والتحقق من تحديثات GitHub...")
+    print("-" * 60)
 
     # 1. Check Internet
     if not check_internet_connection():
-        msg = "No internet connection detected (Offline Mode). Launching local version immediately..."
-        print(f"[UPDATER] {msg}")
+        msg = "⚠️ لا يوجد اتصال بالإنترنت (Offline Mode). تشغيل النسخة المحلية مباشرة..."
+        print(f"📡 {msg}")
         logger.info(msg)
         return {"status": "offline", "updated": False, "message": msg}
 
-    print("[UPDATER] Internet connection active. Checking repository: https://github.com/a360n/EL-AL-NOOR-AI-Desktop-App.git")
+    print("🌐 الاتصال بالإنترنت متوفر. جاري التحقق من أحدث إصدار على GitHub...")
 
     # 2. Check if .git directory exists
     git_dir = os.path.join(APP_DIR, ".git")
     if not os.path.exists(git_dir):
-        msg = "No .git directory found. Running existing local build."
-        print(f"[UPDATER] {msg}")
+        msg = "ℹ️ مجلد .git غير موجود، تشغيل النسخة المحلية الحالية."
+        print(msg)
         return {"status": "no_git", "updated": False, "message": msg}
 
     try:
@@ -83,11 +82,11 @@ def check_and_apply_update() -> Dict[str, Any]:
             run_git_command(["remote", "add", "origin", REPO_URL])
 
         # Fetch latest commits from origin main
-        print("[UPDATER] Fetching latest commits from GitHub (git fetch origin main)...")
+        print("📥 جاري فحص مستودع GitHub (git fetch origin)...")
         fetch_res = run_git_command(["fetch", "origin", "main"])
         if fetch_res.returncode != 0:
-            msg = f"Unable to fetch updates from GitHub: {fetch_res.stderr.strip()}"
-            print(f"[UPDATER] [WARNING] {msg}")
+            msg = f"تعذر استدعاء التحديثات من GitHub: {fetch_res.stderr.strip()}"
+            print(f"⚠️ {msg}")
             return {"status": "fetch_error", "updated": False, "message": msg}
 
         # Compare local HEAD with origin/main
@@ -95,22 +94,26 @@ def check_and_apply_update() -> Dict[str, Any]:
         remote_hash = run_git_command(["rev-parse", "origin/main"]).stdout.strip()
 
         if local_hash and remote_hash and local_hash != remote_hash:
-            print(f"[UPDATER] New update found on GitHub ({remote_hash[:7]})! Applying update...")
-            # Safely reset to remote to avoid local merge conflict on runtime files (e.g. SQLite database)
-            run_git_command(["reset", "--hard", "origin/main"])
-            msg = f"Successfully updated application to latest release ({remote_hash[:7]})!"
-            print(f"[UPDATER] [SUCCESS] {msg}")
-            logger.info(msg)
-            return {"status": "updated", "updated": True, "commit": remote_hash[:7], "message": msg}
+            print("🚀 تم العثور على إصدار أحدث على GitHub! جاري تنزيل التحديثات (git pull)...")
+            pull_res = run_git_command(["pull", "origin", "main"])
+            if pull_res.returncode == 0:
+                msg = f"🎉 تم تحديث البرنامج بنجاح إلى أحدث إصدار ({remote_hash[:7]})!"
+                print(msg)
+                logger.info(msg)
+                return {"status": "updated", "updated": True, "commit": remote_hash[:7], "message": msg}
+            else:
+                msg = f"فشل تطبيق التحديث: {pull_res.stderr.strip()}"
+                print(f"⚠️ {msg}")
+                return {"status": "pull_error", "updated": False, "message": msg}
         else:
-            msg = f"Application is already up to date with GitHub ({local_hash[:7] if local_hash else 'Latest'})."
-            print(f"[UPDATER] [OK] {msg}")
+            msg = f"✅ البرنامج محدث بالفعل لأحدث إصدار على GitHub ({local_hash[:7] if local_hash else 'Latest'})."
+            print(msg)
             logger.info(msg)
             return {"status": "up_to_date", "updated": False, "message": msg}
 
     except Exception as e:
-        msg = f"Error occurred during update check: {e}"
-        print(f"[UPDATER] [ERROR] {msg}")
+        msg = f"حدث خطأ أثناء فحص التحديثات: {e}"
+        print(f"⚠️ {msg}")
         logger.warning(msg)
         return {"status": "error", "updated": False, "message": str(e)}
 
