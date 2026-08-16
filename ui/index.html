@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة EL AL-NOOR AI | معمل النور للألواح الشمسية</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS Style Sheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body>
+
+    <div class="dashboard-wrapper">
+
+        <!-- DESKTOP STICKY NAVBAR -->
+        <header class="desktop-navbar">
+            <div class="brand-section">
+                <img src="assets/Al Noor Factory logo.jpg" alt="Al Noor Logo" class="brand-logo" onerror="this.src='assets/logo.png'">
+                <div class="brand-title">
+                    <h1>منظومة <span class="highlight">EL AL-NOOR AI</span> ☀️🤖</h1>
+                    <p data-i18n="system_subtitle">المنظومة الذكية المركزية لفحص وتدقيق جودة الألواح الشمسية</p>
+                </div>
+            </div>
+
+            <!-- TABS NAVIGATION -->
+            <nav class="nav-tabs-container">
+                <button class="nav-tab-btn active" data-target="liveView">
+                    <i class="fas fa-desktop"></i>
+                    <span data-i18n="live_inspector">غرفة الفحص والمراقبة</span>
+                </button>
+                <button class="nav-tab-btn" data-target="historyView">
+                    <i class="fas fa-file-invoice"></i>
+                    <span data-i18n="history_reports">سجل الفحوصات والتقارير</span>
+                </button>
+                <button class="nav-tab-btn" data-target="auditView">
+                    <i class="fas fa-shield-halved"></i>
+                    <span data-i18n="ai_audit">سجل تدقيق AI</span>
+                </button>
+                <button class="nav-tab-btn" data-target="operatorsView">
+                    <i class="fas fa-users-gear"></i>
+                    <span data-i18n="operator_mgmt">إدارة المشغلين</span>
+                </button>
+                <button class="nav-tab-btn" data-target="settingsView">
+                    <i class="fas fa-sliders"></i>
+                    <span data-i18n="settings">الإعدادات وقناة الاتصال</span>
+                </button>
+            </nav>
+
+            <!-- TOP ACTIONS -->
+            <div class="top-actions">
+                <!-- Watcher Status -->
+                <div class="status-indicator-badge">
+                    <span id="watcherStatusDot" class="status-dot"></span>
+                    <span id="watcherStatusText" data-i18n="sys_status_listening">مستمع نشط لجهاز EcoLab EL</span>
+                </div>
+
+                <!-- Operator Dropdown -->
+                <div class="operator-badge" style="background: rgba(255,255,255,0.06); padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-user-tie" style="color: var(--accent);"></i>
+                    <label for="operatorSelect" style="font-size: 0.78rem; color: #CCC;" data-i18n="human_operator">المراقب:</label>
+                    <select id="operatorSelect" style="background: #111; color: #FFF; border: 1px solid rgba(255,255,255,0.2); border-radius: 3px; padding: 3px 8px; font-size: 0.8rem; font-weight: 600;">
+                        <option value="المهندس/ محمد أحمد">المهندس/ محمد أحمد</option>
+                    </select>
+                </div>
+
+                <!-- Language Switcher -->
+                <button id="langToggleBtn" class="lang-switch-btn" title="تبديل اللغة / Switch Language">
+                    <i class="fas fa-globe"></i>
+                    <span id="langBtnText">English</span>
+                </button>
+
+                <!-- Clock -->
+                <div class="sys-time" style="background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 4px; font-size: 0.82rem; font-family: monospace; color: #CBD5E1;">
+                    <i class="fas fa-clock" style="margin-left: 4px;"></i>
+                    <span id="timeDisplaySpan">00:00:00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTAINER -->
+        <main class="dashboard-content" style="padding: 20px 28px;">
+
+            <!-- ========================================== -->
+            <!-- 1. LIVE INSPECTION VIEW                    -->
+            <!-- ========================================== -->
+            <div id="liveView" class="view-section">
+                <!-- METRICS STATS CARDS -->
+                <section class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span data-i18n="total_inspected">إجمالي الألواح المفحوصة</span>
+                            <i class="fas fa-solar-panel"></i>
+                        </div>
+                        <div id="statTotal" class="metric-value">0</div>
+                        <div class="metric-sub" data-i18n="total_sub">سجلات الجودة المسجلة</div>
+                    </div>
+
+                    <div class="metric-card passed">
+                        <div class="metric-header">
+                            <span data-i18n="passed">مقبول (سليم)</span>
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div id="statPassCount" class="metric-value">0</div>
+                        <div id="statPassPercent" class="metric-sub">0% من الإجمالي</div>
+                    </div>
+
+                    <div class="metric-card failed">
+                        <div class="metric-header">
+                            <span data-i18n="failed">مرفوض (معيب)</span>
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div id="statFailCount" class="metric-value">0</div>
+                        <div id="statFailPercent" class="metric-sub">0% من الإجمالي</div>
+                    </div>
+
+                    <div class="metric-card accuracy">
+                        <div class="metric-header">
+                            <span data-i18n="disagreement_records">سجلات عدم المطابقة</span>
+                            <i class="fas fa-triangle-exclamation" style="color:var(--accent);"></i>
+                        </div>
+                        <div id="statDisagreementCount" class="metric-value">0</div>
+                        <div class="metric-sub" data-i18n="disagreement_sub">أخطاء AI الموثقة بشرياً</div>
+                    </div>
+                </section>
+
+                <!-- DUAL INSPECTION VIEWERS & DECISION LAYOUT -->
+                <div style="display: grid; grid-template-columns: 2.3fr 1.2fr; gap: 24px; align-items: start;">
+
+                    <!-- LEFT: DUAL SIDE-BY-SIDE PANELS -->
+                    <div>
+                        <div class="dual-inspection-grid">
+
+                            <!-- PANEL 1: HUMAN / EL FILE GROUND TRUTH -->
+                            <div class="panel-viewer-card">
+                                <div class="panel-viewer-header">
+                                    <h3>
+                                        <i class="fas fa-user-check" style="color: #2ECC71;"></i>
+                                        <span data-i18n="human_view_title">تشخيص الفحص البشري / ملف EL</span>
+                                    </h3>
+                                    <span class="badge" style="background: rgba(46, 204, 113, 0.15); color: #2ECC71; font-weight: 700; font-size: 0.75rem; padding: 2px 8px; border-radius: 3px;">
+                                        GROUND TRUTH
+                                    </span>
+                                </div>
+                                <div id="humanZoomContainer" class="viewer-screen-container">
+                                    <img id="humanDisplayImage" class="viewer-img-zoom"
+                                        src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='900' viewBox='0 0 600 900'><rect width='100%' height='100%' fill='%23050505'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Cairo, sans-serif' font-size='20' fill='%23555555'>بانتظار استقبال لوح مفحوص...</text></svg>"
+                                        alt="تشخيص الفحص البشري">
+                                    <div class="screen-bottom-bar">
+                                        <span class="screen-badge-info">
+                                            لوح: <strong id="screenPanelId" style="color: #FFF;">ANM-READY</strong>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PANEL 2: AI DIAGNOSIS (EFFICIENTNET) -->
+                            <div class="panel-viewer-card">
+                                <div class="panel-viewer-header">
+                                    <h3>
+                                        <i class="fas fa-robot" style="color: var(--accent);"></i>
+                                        <span data-i18n="ai_view_title">تشخيص الذكاء الاصطناعي (EfficientNet)</span>
+                                    </h3>
+                                    <span id="aiDiagnosisConfidence" class="badge" style="background: rgba(244, 180, 26, 0.15); color: var(--accent); font-weight: 700; font-size: 0.75rem; padding: 2px 8px; border-radius: 3px;">
+                                        ثقة 99.8%
+                                    </span>
+                                </div>
+                                <div id="aiZoomContainer" class="viewer-screen-container">
+                                    <img id="aiDisplayImage" class="viewer-img-zoom"
+                                        src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='900' viewBox='0 0 600 900'><rect width='100%' height='100%' fill='%23050505'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Cairo, sans-serif' font-size='20' fill='%23555555'>بانتظار استقبال لوح مفحوص...</text></svg>"
+                                        alt="تشخيص الذكاء الاصطناعي">
+                                    <div class="screen-bottom-bar">
+                                        <span class="screen-badge-info">
+                                            الحالة: <strong id="statusBadge" style="color: var(--accent);">مستمع نشط</strong>
+                                        </span>
+                                        <div class="zoom-controls-floating">
+                                            <button id="btnZoomOut" class="zoom-btn-tool" title="تصغير"><i class="fas fa-minus"></i></button>
+                                            <span id="zoomVal" style="font-size: 0.75rem; font-family: monospace; min-width: 38px; text-align: center; color: #FFF;">100%</span>
+                                            <button id="btnZoomIn" class="zoom-btn-tool" title="تكبير"><i class="fas fa-plus"></i></button>
+                                            <button id="btnZoomReset" class="zoom-btn-tool" title="إعادة ضبط" style="border-right: 1px solid rgba(255,255,255,0.2); padding-right: 6px;"><i class="fas fa-arrows-rotate"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: OPERATOR DECISION & CONFIRMATION FORM -->
+                    <div class="config-card" style="box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-radius: 6px; padding: 20px;">
+                        <h3 style="border-bottom: 2px solid var(--bg-light); padding-bottom: 10px; margin-bottom: 16px; font-size: 1.05rem;" data-i18n="decision_card_title">
+                            بيانات الفحص وقرار الجودة البشري
+                        </h3>
+
+                        <!-- Placeholder before first panel arrival -->
+                        <div id="formPlaceholder" style="text-align: center; padding: 50px 20px; color: #888; border: 1.5px dashed rgba(0,0,0,0.1); border-radius: 4px;">
+                            <i class="fas fa-satellite-dish" style="font-size: 2.8rem; color: var(--primary); margin-bottom: 16px; animation: pulse 1.5s infinite alternate;"></i>
+                            <p style="font-size: 0.95rem; font-weight: 700; color: #444;" data-i18n="waiting_prompt_title">بانتظار استقبال فحص لوح من جهاز Ecolab EL</p>
+                            <p style="font-size: 0.75rem; margin-top: 8px; color: #777;" data-i18n="waiting_prompt_desc">قم بتشغيل جهاز الفحص أو استخدم أداة المحاكاة من صفحة الإعدادات لتنشيط لوحة القرار.</p>
+                        </div>
+
+                        <!-- Interactive Form -->
+                        <form id="operatorDecisionForm" style="display: none; flex-direction: column; gap: 16px;">
+                            <!-- Serial Number -->
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--primary); border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-barcode" style="color: var(--accent);"></i>
+                                <span><span data-i18n="current_panel_serial">الرقم التسلسلي للوحة:</span> <strong id="formPanelSerial" style="color: var(--secondary);">ANM XXXXXXXXXX</strong></span>
+                            </div>
+
+                            <!-- AI Diagnosis Info Box -->
+                            <div style="background-color: var(--bg-light); border-right: 4px solid var(--primary); padding: 12px; border-radius: 4px;">
+                                <div style="font-size: 0.8rem; font-weight: 700; color: #555; margin-bottom: 6px;">
+                                    <i class="fas fa-robot"></i> <span data-i18n="ai_report_title">تقرير تشخيص الذكاء الاصطناعي (EfficientNet-B0):</span>
+                                </div>
+                                <div id="aiDiagnosisDefects" style="font-size: 0.85rem; font-weight: 600;">
+                                    <span style="color: #2ECC71;"><i class="fas fa-check-circle"></i> لا توجد عيوب</span>
+                                </div>
+                            </div>
+
+                            <!-- Star Rating -->
+                            <div class="form-group">
+                                <label class="rating-label" data-i18n="star_rating_label">تقييم جودة اللوح (تقييم النجوم من 0 إلى 3):</label>
+                                <div id="ratingStars" class="rating-stars">
+                                    <i class="far fa-star" data-value="1"></i>
+                                    <i class="far fa-star" data-value="2"></i>
+                                    <i class="far fa-star" data-value="3"></i>
+                                </div>
+                                <span id="ratingDescription" style="font-size: 0.75rem; color:#666; font-weight: 700; margin-top: 4px; display: block;">0 / 3 نجوم</span>
+                                <input type="hidden" id="panelRating" value="0">
+                            </div>
+
+                            <!-- AI Match Verification Toggle -->
+                            <div class="form-group">
+                                <label style="font-weight: 700; color: var(--secondary); font-size: 0.9rem;" data-i18n="is_ai_accurate">
+                                    هل تحليل الذكاء الاصطناعي مطابق للواقع؟
+                                </label>
+                                <div class="verify-toggle-buttons">
+                                    <button type="button" id="verifyYes" class="btn-verify yes active">
+                                        <i class="fas fa-check-circle" style="margin-left: 6px;"></i> <span data-i18n="match_yes">نعم، مطابق</span>
+                                    </button>
+                                    <button type="button" id="verifyNo" class="btn-verify no">
+                                        <i class="fas fa-times-circle" style="margin-left: 6px;"></i> <span data-i18n="match_no">لا، غير مطابق (تصحيح يدوي)</span>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="isAiMatch" value="yes">
+                            </div>
+
+                            <!-- Conveyor Dispatch Action -->
+                            <div class="form-group">
+                                <label for="repairAction" style="font-weight: 700; font-size: 0.85rem;" data-i18n="dispatch_action">
+                                    مسار الفرز وتوجيه اللوح:
+                                </label>
+                                <select id="repairAction" required style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #CCC; font-weight: 600;">
+                                    <option value="Pass to Production">تمرير سليم لخط الإنتاج (Pass)</option>
+                                    <option value="Repair">توجيه ميكانيكي لخط الصيانة (Repair)</option>
+                                    <option value="Scrap">توجيه ميكانيكي لخط الخردة (Scrap)</option>
+                                    <option value="Re-inspect">إرجاع لفحص يدوي إضافي (Re-inspect)</option>
+                                </select>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="form-group">
+                                <textarea id="decisionNotes" placeholder="ملاحظات إضافية من المراقب..." style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #CCC; font-size: 0.8rem; resize: vertical; min-height: 48px;"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" style="margin-top: 4px; width: 100%; padding: 12px; font-weight: 700; font-size: 0.95rem;">
+                                <i class="fas fa-paper-plane" style="margin-left: 8px;"></i> <span data-i18n="btn_save_decision">حفظ وإقرار الجودة وتوجيه اللوح</span>
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- 2. HISTORY & REPORTS VIEW                  -->
+            <!-- ========================================== -->
+            <div id="historyView" class="view-section" style="display: none;">
+                <section class="history-section">
+                    <div class="history-header">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fas fa-clipboard-list" style="color: var(--primary); font-size: 1.5rem;"></i>
+                            <h3 data-i18n="history_table_title">جدول تقارير فحص الجودة الشامل (Quality Logs Database)</h3>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="historySearchInput" placeholder="بحث برقم اللوح أو السيريال..." style="padding: 7px 12px; border-radius: 4px; border: 1px solid #CCC; font-size: 0.85rem; width: 220px;">
+                            <select id="historyStatusFilter" style="padding: 7px 10px; border-radius: 4px; border: 1px solid #CCC; font-size: 0.85rem;">
+                                <option value="ALL">كافة الحالات (ALL)</option>
+                                <option value="PASS">سليم فقط (PASS)</option>
+                                <option value="FAIL">معيب فقط (FAIL)</option>
+                            </select>
+                            <select id="historyMatchFilter" style="padding: 7px 10px; border-radius: 4px; border: 1px solid #CCC; font-size: 0.85rem;">
+                                <option value="ALL">كافة سجلات المطابقة</option>
+                                <option value="MATCH">مطابق للـ AI</option>
+                                <option value="MISMATCH">غير مطابق للـ AI</option>
+                            </select>
+                            <button id="btnExport" class="btn btn-secondary" style="padding: 7px 14px; font-size: 0.82rem;">
+                                <i class="fas fa-file-invoice"></i> <span data-i18n="btn_export_html">تصدير HTML</span>
+                            </button>
+                            <button id="btnExportPDF" class="btn btn-secondary" style="background-color: #e74c3c; border-color: #e74c3c; color: white; padding: 7px 14px; font-size: 0.82rem;">
+                                <i class="fas fa-file-pdf"></i> <span data-i18n="btn_export_pdf">طباعة PDF</span>
+                            </button>
+                            <button id="btnClear" class="btn btn-dark" style="color: #e74c3c; border-color: rgba(231,76,60,0.3); padding: 7px 12px; font-size: 0.82rem;" title="حذف كافة السجلات">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="th_panel_id">رقم اللوحة</th>
+                                    <th data-i18n="th_serial">الرقم التسلسلي</th>
+                                    <th data-i18n="th_human_status">التشخيص البشري</th>
+                                    <th data-i18n="th_match">المطابقة</th>
+                                    <th data-i18n="th_defects">الخلايا المعيبة</th>
+                                    <th data-i18n="th_action">مسار الفرز</th>
+                                    <th data-i18n="th_operator">المراقب</th>
+                                    <th data-i18n="th_timestamp">التاريخ والوقت</th>
+                                    <th data-i18n="th_actions">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="qualityTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="historyPagination"></div>
+                </section>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- 3. AI AUDIT VIEW                           -->
+            <!-- ========================================== -->
+            <div id="auditView" class="view-section" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1fr 2.8fr; gap: 24px; align-items: start;">
+                    <!-- Left: Audit KPI Summary -->
+                    <div class="config-card" style="padding: 24px;">
+                        <h4 style="font-size: 1.05rem; margin-bottom: 16px; color: var(--secondary); border-bottom: 2px solid var(--bg-light); padding-bottom: 8px;">
+                            <i class="fas fa-chart-pie" style="color:var(--primary); margin-left:8px;"></i>
+                            <span data-i18n="audit_title">تقرير كفاءة وتطابق الـ AI</span>
+                        </h4>
+                        <div class="chart-container" style="display: flex; flex-direction: column; gap: 14px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,0,0,0.06); padding-bottom:8px;">
+                                <span style="font-size:0.85rem; color:#666;" data-i18n="total_audited">إجمالي الألواح المدققة</span>
+                                <strong id="auditTotal" style="font-size:1.15rem; color:var(--secondary);">0</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,0,0,0.06); padding-bottom:8px;">
+                                <span style="font-size:0.85rem; color:#666;" data-i18n="matched_decisions">قرارات متطابقة للواقع (نعم)</span>
+                                <strong id="auditMatchCount" style="font-size:1.15rem; color:#28a745;">0</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,0,0,0.06); padding-bottom:8px;">
+                                <span style="font-size:0.85rem; color:#666;" data-i18n="mismatched_decisions">قرارات غير متطابقة (لا)</span>
+                                <strong id="auditMismatchCount" style="font-size:1.15rem; color:#dc3545;">0</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                                <span style="font-size:0.85rem; color:#666;" data-i18n="current_ai_accuracy">دقة نموذج EfficientNet الحالية</span>
+                                <strong id="auditAccuracyRate" style="font-size:1.35rem; color:var(--primary);">100%</strong>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 14px; background-color: var(--primary-alpha); border-radius: 4px; padding: 12px; font-size: 0.75rem; color: var(--primary); line-height: 1.5; font-weight: 600;" data-i18n="audit_info_note">
+                            <i class="fas fa-info-circle"></i> يتم حساب النسبة تلقائياً بناءً على تقييم المطابقة الذي يدخله المراقب في غرفة الفحص عند حفظ الألواح.
+                        </div>
+                    </div>
+
+                    <!-- Right: Comparison Table -->
+                    <div class="config-card" style="padding: 24px;">
+                        <div class="history-header" style="margin-bottom: 16px; padding-bottom: 8px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-code-compare" style="color: var(--primary); font-size: 1.3rem;"></i>
+                                <h3 style="font-size: 1.15rem;" data-i18n="audit_log_title">سجل مقارنة وفحص تشخيصات الـ AI (Verification Log)</h3>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button id="btnExportAudit" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.82rem;">
+                                    <i class="fas fa-file-invoice"></i> <span data-i18n="btn_export_html">تصدير HTML</span>
+                                </button>
+                                <button id="btnExportAuditPDF" class="btn btn-secondary" style="background-color: #e74c3c; border-color: #e74c3c; color: white; padding: 6px 12px; font-size: 0.82rem;">
+                                    <i class="fas fa-file-pdf"></i> <span data-i18n="btn_export_pdf">طباعة PDF</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="th_panel_id">رقم اللوحة</th>
+                                        <th data-i18n="th_match">مطابق للواقع؟</th>
+                                        <th data-i18n="th_ai_data">بيانات الذكاء الاصطناعي (AI)</th>
+                                        <th data-i18n="th_operator_correction">بيانات وتصحيح المشغل</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="auditTableBody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- 4. OPERATOR MANAGEMENT VIEW                -->
+            <!-- ========================================== -->
+            <div id="operatorsView" class="view-section" style="display: none;">
+                <div class="config-card" style="padding: 24px;">
+                    <div class="history-header" style="margin-bottom: 18px; padding-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fas fa-users-gear" style="color: var(--primary); font-size: 1.4rem;"></i>
+                            <h3 style="font-size: 1.15rem;" data-i18n="operators_title">سجل المشغلين والمهندسين المعتمدين</h3>
+                        </div>
+                        <button id="btnAddOperator" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">
+                            <i class="fas fa-user-plus" style="margin-left: 6px;"></i> <span data-i18n="btn_add_operator">إضافة مشغل جديد</span>
+                        </button>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="th_emp_code">كود الموظف</th>
+                                    <th data-i18n="th_name">الاسم الكامل</th>
+                                    <th data-i18n="th_role">المسمى الوظيفي</th>
+                                    <th data-i18n="th_status">الحالة</th>
+                                    <th data-i18n="th_actions">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="operatorsTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- 5. SETTINGS & CONNECTIVITY VIEW            -->
+            <!-- ========================================== -->
+            <div id="settingsView" class="view-section" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; align-items: start;">
+
+                    <!-- Left: Configuration Form -->
+                    <div class="config-card" style="padding: 24px;">
+                        <h3 style="border-bottom: 2px solid var(--bg-light); padding-bottom: 10px; margin-bottom: 18px;" data-i18n="settings_title">
+                            إعدادات الربط والمسارات والنماذج
+                        </h3>
+
+                        <form id="settingsForm" style="display: flex; flex-direction: column; gap: 18px;">
+                            <!-- Watch Folder -->
+                            <div class="form-group">
+                                <label style="font-weight: 700; font-size: 0.85rem;" data-i18n="watch_folder_lbl">
+                                    مسار المجلد المشترك مع جهاز EcoLab EL:
+                                </label>
+                                <input type="text" id="watchFolderInput" placeholder="C:\EcoLAB\v3.17.2\..." style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #CCC; font-family: monospace; font-size: 0.85rem;" required>
+                                <span style="font-size: 0.72rem; color: #888; margin-top: 4px; display: block;" data-i18n="watch_folder_hint">
+                                    المسار الذي يضع فيه برنامج EcolabEL.exe ملفات الـ .el وصور الـ .tif
+                                </span>
+                            </div>
+
+                            <!-- Output Folder -->
+                            <div class="form-group">
+                                <label style="font-weight: 700; font-size: 0.85rem;" data-i18n="output_folder_lbl">
+                                    مسار حفظ المخرجات والصور المقطعة:
+                                </label>
+                                <input type="text" id="outputFolderInput" placeholder="C:\EL_ALNOOR_AI\processed_panels" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #CCC; font-family: monospace; font-size: 0.85rem;">
+                            </div>
+
+                            <!-- Toggles -->
+                            <div style="display: flex; gap: 20px; align-items: center; margin-top: 4px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                                    <input type="checkbox" id="autoProcessCheck" checked style="width: 16px; height: 16px;">
+                                    <span>المعالجة والتحليل التلقائي فور وصول الملفات</span>
+                                </label>
+
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                                    <input type="checkbox" id="soundAlertCheck" checked style="width: 16px; height: 16px;">
+                                    <span>تفعيل التنبيه الصوتي عند اكتشاف عيوب</span>
+                                </label>
+                            </div>
+
+                            <div style="display: flex; gap: 12px; margin-top: 8px;">
+                                <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">
+                                    <i class="fas fa-floppy-disk" style="margin-left: 6px;"></i> <span data-i18n="btn_save_settings">حفظ الإعدادات</span>
+                                </button>
+                                <button type="button" id="btnScanNow" class="btn btn-secondary" style="padding: 10px 18px;">
+                                    <i class="fas fa-search-plus" style="margin-left: 6px;"></i> <span data-i18n="btn_scan_now">فحص المسار الآن (Scan Folder Now)</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right: Simulator & Test Engine -->
+                    <div class="config-card" style="padding: 24px; background: rgba(13, 138, 149, 0.05); border: 1.5px dashed var(--primary);">
+                        <h4 style="font-size: 1.05rem; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-play-circle"></i> <span data-i18n="simulator_box_title">أداة محاكاة وبث عينات الألواح:</span>
+                        </h4>
+                        <p style="font-size: 0.78rem; color: #555; line-height: 1.5; margin-bottom: 16px;" data-i18n="simulator_box_desc">
+                            تتيح لك تجربة خط المعالجة بالكامل والذكاء الاصطناعي عبر بث عينة فحص تجريبية بنقرة واحدة.
+                        </p>
+
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="font-size: 0.8rem; font-weight: 700; color: #444;">اختر عينة اللوح للتجربة:</label>
+                            <select id="sampleSelect" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #CCC; font-weight: 600; margin-top: 4px;">
+                                <option value="1">العينة 1 (Panel 1 - FAIL)</option>
+                                <option value="2">العينة 2 (Panel 2 - FAIL)</option>
+                                <option value="3">العينة 3 (Panel 3 - FAIL)</option>
+                                <option value="4">العينة 4 (Panel 4 - FAIL)</option>
+                                <option value="5">العينة 5 (Panel 5 - FAIL)</option>
+                                <option value="6">العينة 6 (Panel 6 - FAIL)</option>
+                                <option value="7">العينة 7 (Panel 7 - FAIL)</option>
+                                <option value="8">العينة 8 (Panel 8 - FAIL)</option>
+                                <option value="9">العينة 9 (Panel 9 - FAIL)</option>
+                                <option value="10">العينة 10 (Panel 10 - FAIL)</option>
+                                <option value="11">العينة 11 (Panel 11 - FAIL)</option>
+                            </select>
+                        </div>
+
+                        <button id="btnSimulateSample" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; background: var(--accent); color: #000; border-color: var(--accent);">
+                            <i class="fas fa-play" style="margin-left: 6px;"></i> <span data-i18n="btn_simulate">بث عينة لوح الآن</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="footer" style="padding: 16px 28px; background: #111; color: #888; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.78rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>© 2026 معمل النور للألواح الشمسية - جميع الحقوق محفوظة لمنظومة EL AL-NOOR AI</div>
+            <div>نسخة التطبيق المكتبي v1.0.0 (Windows / Native)</div>
+        </footer>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODAL 1: 144-CELL MATRIX MANUAL CORRECTION                        -->
+    <!-- ================================================================= -->
+    <div id="matrixModal" class="app-modal-overlay">
+        <div class="app-modal-box">
+            <div class="modal-box-header">
+                <h3><i class="fas fa-table-cells" style="color: var(--accent);"></i> <span data-i18n="manual_corr_title">تصحيح بيانات الذكاء الاصطناعي يدوياً</span></h3>
+                <button id="closeMatrixModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-box-body">
+                <p style="font-size: 0.82rem; color: #A0AEC0; margin-bottom: 12px;" data-i18n="manual_corr_desc">
+                    انقر على الخلايا في مصفوفة الـ 144 لتحديد الخلايا المعيبة الحقيقية:
+                </p>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label style="font-size: 0.82rem; font-weight: 700;" data-i18n="defect_type_label">نوع العيب الرئيسي:</label>
+                        <select id="correctDefectType" style="padding: 6px 10px; border-radius: 4px; background: #252525; color: #FFF; border: 1px solid rgba(255,255,255,0.2); font-size: 0.82rem;">
+                            <option value="Cracks">Cracks (شروخ وكسور)</option>
+                            <option value="Ribbons">Ribbons (أشرطة ولحام)</option>
+                            <option value="Misalignment">Misalignment (تزحزح خلايا)</option>
+                            <option value="Impurity">Impurity (شوائب وأوساخ)</option>
+                            <option value="Missing">Missing (نواقص مفقودة)</option>
+                        </select>
+                    </div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent);">
+                        الخلايا المحددة: <span id="matrixDefectCount">0 خلية</span>
+                    </div>
+                </div>
+
+                <!-- 144-CELL GRID MATRIX (A1 to F24) -->
+                <div id="matrixGridContainer" class="cell-matrix-container">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+            <div class="modal-box-footer">
+                <button id="cancelMatrixModal" class="btn btn-dark" data-i18n="modal_cancel">إلغاء</button>
+                <button id="confirmMatrixModal" class="btn btn-primary" data-i18n="modal_confirm">تأكيد التصحيح اليدوي</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODAL 2: INSPECTION DETAIL MODAL                                 -->
+    <!-- ================================================================= -->
+    <div id="detailModal" class="app-modal-overlay">
+        <div class="app-modal-box" style="max-width: 900px;">
+            <div class="modal-box-header">
+                <h3><i class="fas fa-magnifying-glass" style="color: var(--primary);"></i> معاينة تفاصيل فحص اللوح</h3>
+                <button id="closeDetailModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-box-body">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #252525; padding: 12px; border-radius: 4px; font-size: 0.82rem; margin-bottom: 16px;">
+                    <div>رقم اللوحة: <strong id="modalPanelId" style="color: #FFF;">-</strong></div>
+                    <div>الرقم التسلسلي: <code id="modalSerial" style="color: var(--accent);">-</code></div>
+                    <div>التاريخ: <span id="modalTimestamp">-</span></div>
+                    <div>المراقب: <span id="modalOperator">-</span></div>
+                    <div>المطابقة: <strong id="modalMatchStatus">-</strong></div>
+                    <div>الإجراء: <strong id="modalAction">-</strong></div>
+                </div>
+
+                <!-- Dual View in Modal -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div style="background: #111; padding: 10px; border-radius: 4px; text-align: center;">
+                        <h5 style="color: #2ECC71; margin-bottom: 8px; font-size: 0.85rem;">التشخيص البشري (Ground Truth)</h5>
+                        <img id="modalHumanImg" src="" style="max-width: 100%; max-height: 400px; object-fit: contain; border-radius: 3px;" alt="Human Overlay">
+                    </div>
+                    <div style="background: #111; padding: 10px; border-radius: 4px; text-align: center;">
+                        <h5 style="color: var(--accent); margin-bottom: 8px; font-size: 0.85rem;">تشخيص الذكاء الاصطناعي (AI Overlay)</h5>
+                        <img id="modalAiImg" src="" style="max-width: 100%; max-height: 400px; object-fit: contain; border-radius: 3px;" alt="AI Overlay">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-box-footer">
+                <button class="btn btn-dark" onclick="document.getElementById('detailModal').classList.remove('active')" data-i18n="modal_close">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODAL 3: OPERATOR ADD / EDIT FORM                                -->
+    <!-- ================================================================= -->
+    <div id="operatorModal" class="app-modal-overlay">
+        <div class="app-modal-box" style="max-width: 500px;">
+            <div class="modal-box-header">
+                <h3 id="modalOperatorTitle"><i class="fas fa-user-plus" style="color: var(--primary);"></i> إضافة مشغل جديد</h3>
+                <button id="closeOperatorModal" class="modal-close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="operatorForm">
+                <div class="modal-box-body" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div class="form-group">
+                        <label style="font-size: 0.82rem; font-weight: 700;">اسم المهندس / المشغل الكامل:</label>
+                        <input type="text" id="opNameInput" placeholder="مثال: المهندس/ أحمد خالد" required style="width: 100%; padding: 8px; border-radius: 4px; background: #252525; color: #FFF; border: 1px solid rgba(255,255,255,0.2);">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 0.82rem; font-weight: 700;">المسمى الوظيفي / الدور:</label>
+                        <select id="opRoleInput" style="width: 100%; padding: 8px; border-radius: 4px; background: #252525; color: #FFF; border: 1px solid rgba(255,255,255,0.2);">
+                            <option value="مهندس رقابة جودة">مهندس رقابة جودة</option>
+                            <option value="مهندس خط الإنتاج">مهندس خط الإنتاج</option>
+                            <option value="مهندس فحص الأشعة EL">مهندس فحص الأشعة EL</option>
+                            <option value="فني فحص متقدم">فني فحص متقدم</option>
+                            <option value="مدير ضبط الجودة">مدير ضبط الجودة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 0.82rem; font-weight: 700;">كود الموظف (اختياري):</label>
+                        <input type="text" id="opCodeInput" placeholder="ENG-005" style="width: 100%; padding: 8px; border-radius: 4px; background: #252525; color: #FFF; border: 1px solid rgba(255,255,255,0.2);">
+                    </div>
+                </div>
+                <div class="modal-box-footer">
+                    <button type="button" id="cancelOperatorModal" class="btn btn-dark" data-i18n="modal_cancel">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="modal_confirm">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT MODULES -->
+    <script src="js/i18n.js"></script>
+    <script src="js/live_inspection.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/audit.js"></script>
+    <script src="js/operators.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

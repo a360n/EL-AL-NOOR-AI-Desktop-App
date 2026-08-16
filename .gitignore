@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+dist/
+
+# SQLite data / Processed panel cache (keep schema, exclude local session caches)
+data/processed_panels/
+*.tmp
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
