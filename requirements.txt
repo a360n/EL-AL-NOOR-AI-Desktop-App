@@ -1,9 +1,10 @@
 fastapi>=0.110.0
-uvicorn>=0.28.0
+uvicorn[standard]>=0.28.0
+websockets>=12.0
+wsproto>=1.2.0
 onnxruntime>=1.17.0
 opencv-python-headless>=4.9.0
 pillow>=10.2.0
 numpy>=1.26.0
 pydantic>=2.6.0
-websockets>=12.0
 pyinstaller>=6.4.0
