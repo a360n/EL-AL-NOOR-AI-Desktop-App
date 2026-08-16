@@ -4,13 +4,13 @@ title EL AL-NOOR AI - Desktop Inspection System
 
 echo ======================================================================
 echo    EL AL-NOOR AI - Solar Panels Quality Inspection Platform
-echo    معمل النور للألواح الشمسية - تشغيل التطبيق المكتبي
+echo    Al Noor Solar Panels Factory - Desktop Inspection Launcher
 echo ======================================================================
 echo.
 
 where python >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [ERROR] Python is not installed or not in PATH!
+    echo [ERROR] Python is not installed or not in system PATH!
     pause
     exit /b 1
 )

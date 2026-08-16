@@ -116,8 +116,8 @@ def launch_native_window(url: str, title: str = "EL AL-NOOR AI ☀️🤖 - مع
 
 def main():
     print("=" * 70)
-    print("  EL AL-NOOR AI ☀️🤖 - المنظومة الذكية لفحص الألواح الشمسية  ")
-    print("  معمل النور للألواح الشمسية - إصدار التطبيق المكتبي v1.0.0  ")
+    print("  EL AL-NOOR AI ☀️🤖 - Solar Panels Quality Inspection Platform")
+    print("  Al Noor Solar Panels Factory - Desktop Application Edition v1.0.0")
     print("=" * 70)
 
     # 1. Check internet and apply latest updates from GitHub if available
@@ -149,7 +149,7 @@ def main():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\n👋 إغلاق منظومة EL AL-NOOR AI بنجاح...")
+        print("\n[INFO] EL AL-NOOR AI Platform closed successfully.")
 
 
 if __name__ == "__main__":

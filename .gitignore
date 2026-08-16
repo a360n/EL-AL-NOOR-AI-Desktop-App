@@ -11,6 +11,8 @@ build/
 dist/
 
 # SQLite data / Processed panel cache (keep schema, exclude local session caches)
+data/*.db
+data/*.db-journal
 data/processed_panels/
 *.tmp
 *.log
